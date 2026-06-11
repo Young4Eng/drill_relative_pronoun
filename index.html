@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relative Pronoun Rank Game</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      background-color: #f3f4f6;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // React-compliant inline SVG icons
+    function LockIcon({ className }) {
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+      );
+    }
+
+    function SwordsIcon({ className }) {
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="14.5 17.5 3 5 3 3 5 3 17.5 14.5" />
+          <line x1="13" y1="19" x2="19" y2="13" />
+          <line x1="16" y1="16" x2="20" y2="20" />
+          <line x1="19" y1="21" x2="21" y2="19" />
+          <polyline points="9.5 17.5 21 5 21 3 19 3 6.5 14.5" />
+          <line x1="11" y1="19" x2="5" y2="13" />
+          <line x1="8" y1="16" x2="4" y2="20" />
+          <line x1="5" y1="21" x2="3" y2="19" />
+        </svg>
+      );
+    }
+
+    function ClockIcon({ className }) {
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      );
+    }
+
+    function FlameIcon({ className }) {
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+        </svg>
+      );
+    }
+
+    function TrophyIcon({ className }) {
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+          <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
+          <path d="M4 22h16" />
+          <path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34" />
+          <path d="M12 2a6 6 0 0 1 6 6v3a6 6 0 0 1-6 6 6 6 0 0 1-6-6V8a6 6 0 0 1 6-6z" />
+        </svg>
+      );
+    }
+
+    function AlertTriangleIcon({ className }) {
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="12 2 22 22 2 22" />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+      );
+    }
+
+    function CheckCircle2Icon({ className }) {
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <path d="m9 12 2 2 4-4" />
+        </svg>
+      );
+    }
+
+    function ChevronRightIcon({ className }) {
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      );
+    }
+
+    function AwardIcon({ className }) {
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="8" r="7" />
+          <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+        </svg>
+      );
+    }
+
+    function RotateCcwIcon({ className }) {
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+          <polyline points="3 3 3 8 8 8" />
+        </svg>
+      );
+    }
+
+    function SparklesIcon({ className }) {
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+          <path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5z" />
+          <path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1z" />
+        </svg>
+      );
+    }
+
+    function BookOpenIcon({ className }) {
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+        </svg>
+      );
+    }
+
+    function PlayIcon({ className }) {
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="5 3 19 12 5 21 5 3" />
+        </svg>
+      );
+    }
+
+    function ShieldAlertIcon({ className }) {
+      return (
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+      );
+    }
+
+    const TIERS_CONFIG = [
+      { name: '챌린저 (Challenger)', min: 20000, color: 'text-amber-600 border-amber-400 bg-amber-50 hover:bg-amber-100', shadow: 'shadow-[0_0_15px_rgba(251,191,36,0.5)] animate-pulse' },
+      { name: '그랜드마스터 (Grandmaster)', min: 17000, color: 'text-red-600 border-red-400 bg-red-50 hover:bg-red-100', shadow: 'shadow-[0_0_10px_rgba(239,68,68,0.4)]' },
+      { name: '마스터 (Master)', min: 14000, color: 'text-purple-600 border-purple-400 bg-purple-50 hover:bg-purple-100', shadow: 'shadow-[0_0_10px_rgba(168,85,247,0.3)]' },
+      { name: '다이아몬드 (Diamond)', min: 11000, color: 'text-blue-600 border-blue-400 bg-blue-50 hover:bg-blue-100', shadow: 'shadow-[0_0_8px_rgba(59,130,246,0.3)]' },
+      { name: '에메랄드 (Emerald)', min: 8000, color: 'text-emerald-600 border-emerald-400 bg-emerald-50 hover:bg-emerald-100', shadow: '' },
+      { name: '플래티넘 (Platinum)', min: 5500, color: 'text-cyan-600 border-cyan-400 bg-cyan-50 hover:bg-cyan-100', shadow: '' },
+      { name: '골드 (Gold)', min: 3500, color: 'text-yellow-600 border-yellow-400 bg-yellow-50 hover:bg-yellow-100', shadow: '' },
+      { name: '실버 (Silver)', min: 2000, color: 'text-gray-600 border-gray-300 bg-gray-50 hover:bg-gray-100', shadow: '' },
+      { name: '브론즈 (Bronze)', min: 800, color: 'text-amber-800 border-amber-600 bg-amber-50 hover:bg-amber-100', shadow: '' },
+      { name: '아이언 (Iron)', min: 0, color: 'text-gray-500 border-gray-300 bg-gray-100 hover:bg-gray-200', shadow: '' }
+    ];
+
+    const ALL_DRILLS_POOL = [
+      // LEVEL 1: 공통 명사 찾기 (30개)
+      { level: 1, type: "common_noun", s1: "I know a boy.", s2: "The boy likes apples.", options: ["I", "boy", "apples", "know"], expected: "boy", explanation: "두 문장에서 공통으로 지칭하는 명사는 boy입니다." },
+      { level: 1, type: "common_noun", s1: "Look at the dog.", s2: "The dog is sleeping.", options: ["Look", "dog", "sleeping", "is"], expected: "dog", explanation: "공통 명사는 dog입니다." },
+      { level: 1, type: "common_noun", s1: "She bought a car.", s2: "The car is very fast.", options: ["She", "bought", "car", "fast"], expected: "car", explanation: "공통 명사는 car입니다." },
+      { level: 1, type: "common_noun", s1: "We met a teacher.", s2: "The teacher teaches math.", options: ["We", "met", "teacher", "math"], expected: "teacher", explanation: "공통 명사는 teacher입니다." },
+      { level: 1, type: "common_noun", s1: "I lost the book.", s2: "The book was interesting.", options: ["I", "lost", "book", "interesting"], expected: "book", explanation: "공통 명사는 book입니다." },
+      { level: 1, type: "common_noun", s1: "They live in a house.", s2: "The house is old.", options: ["They", "live", "house", "old"], expected: "house", explanation: "공통 명사는 house입니다." },
+      { level: 1, type: "common_noun", s1: "He has a cat.", s2: "The cat is black.", options: ["He", "has", "cat", "black"], expected: "cat", explanation: "공통 명사는 cat입니다." },
+      { level: 1, type: "common_noun", s1: "I like the movie.", s2: "The movie is funny.", options: ["I", "like", "movie", "funny"], expected: "movie", explanation: "공통 명사는 movie입니다." },
+      { level: 1, type: "common_noun", s1: "She saw a bird.", s2: "The bird was singing.", options: ["She", "saw", "bird", "singing"], expected: "bird", explanation: "공통 명사는 bird입니다." },
+      { level: 1, type: "common_noun", s1: "I found a pen.", s2: "The pen is blue.", options: ["I", "found", "pen", "blue"], expected: "pen", explanation: "공통 명사는 pen입니다." },
+      { level: 1, type: "common_noun", s1: "He uses a computer.", s2: "The computer is new.", options: ["He", "uses", "computer", "new"], expected: "computer", explanation: "공통 명사는 computer입니다." },
+      { level: 1, type: "common_noun", s1: "We met the woman.", s2: "The woman is a doctor.", options: ["We", "met", "woman", "doctor"], expected: "woman", explanation: "공통 명사는 woman입니다." },
+      { level: 1, type: "common_noun", s1: "I saw the students.", s2: "The students are studying.", options: ["I", "saw", "students", "studying"], expected: "students", explanation: "공통 명사는 students입니다." },
+      { level: 1, type: "common_noun", s1: "She lost her bag.", s2: "The bag was heavy.", options: ["She", "lost", "bag", "heavy"], expected: "bag", explanation: "공통 명사는 bag입니다." },
+      { level: 1, type: "common_noun", s1: "Look at the tree.", s2: "The tree is tall.", options: ["Look", "at", "tree", "tall"], expected: "tree", explanation: "공통 명사는 tree입니다." },
+      { level: 1, type: "common_noun", s1: "I have a friend.", s2: "The friend lives here.", options: ["I", "have", "friend", "here"], expected: "friend", explanation: "공통 명사는 friend입니다." },
+      { level: 1, type: "common_noun", s1: "He is a chef.", s2: "The chef cooks well.", options: ["He", "is", "chef", "cooks"], expected: "chef", explanation: "공통 명사는 chef입니다." },
+      { level: 1, type: "common_noun", s1: "I talked to the driver.", s2: "The driver was kind.", options: ["I", "talked", "driver", "kind"], expected: "driver", explanation: "공통 명사는 driver입니다." },
+      { level: 1, type: "common_noun", s1: "She bought a watch.", s2: "The watch is expensive.", options: ["She", "bought", "watch", "expensive"], expected: "watch", explanation: "공통 명사는 watch입니다." },
+      { level: 1, type: "common_noun", s1: "Look at the picture.", s2: "The picture is beautiful.", options: ["Look", "picture", "is", "beautiful"], expected: "picture", explanation: "공통 명사는 picture입니다." },
+      { level: 1, type: "common_noun", s1: "I heard a song.", s2: "The song was sad.", options: ["I", "heard", "song", "sad"], expected: "song", explanation: "공통 명사는 song입니다." },
+      { level: 1, type: "common_noun", s1: "We went to a restaurant.", s2: "The restaurant was clean.", options: ["We", "went", "restaurant", "clean"], expected: "restaurant", explanation: "공통 명사는 restaurant입니다." },
+      { level: 1, type: "common_noun", s1: "They play in the park.", s2: "The park is large.", options: ["They", "play", "park", "large"], expected: "park", explanation: "공통 명사는 park입니다." },
+      { level: 1, type: "common_noun", s1: "He wears shoes.", s2: "The shoes are dirty.", options: ["He", "wears", "shoes", "dirty"], expected: "shoes", explanation: "공통 명사는 shoes입니다." },
+      { level: 1, type: "common_noun", s1: "I need a camera.", s2: "The camera takes pictures.", options: ["I", "need", "camera", "pictures"], expected: "camera", explanation: "공통 명사는 camera입니다." },
+      { level: 1, type: "common_noun", s1: "She wrote a letter.", s2: "The letter was long.", options: ["She", "wrote", "letter", "long"], expected: "letter", explanation: "공통 명사는 letter입니다." },
+      { level: 1, type: "common_noun", s1: "I see a man.", s2: "The man is running.", options: ["I", "see", "man", "running"], expected: "man", explanation: "공통 명사는 man입니다." },
+      { level: 1, type: "common_noun", s1: "He fixed the bike.", s2: "The bike is mine.", options: ["He", "fixed", "bike", "mine"], expected: "bike", explanation: "공통 명사는 bike입니다." },
+      { level: 1, type: "common_noun", s1: "We need water.", s2: "The water is cold.", options: ["We", "need", "water", "cold"], expected: "water", explanation: "공통 명사는 water입니다." },
+      { level: 1, type: "common_noun", s1: "Look at the stars.", s2: "The stars are bright.", options: ["Look", "stars", "are", "bright"], expected: "stars", explanation: "공통 명사는 stars입니다." },
+
+      // LEVEL 2: Who vs Which 선택 (30개)
+      { level: 2, type: "choice", sentence: "The woman [blank] is talking to the teacher is my mom.", options: ["who", "which"], expected: "who", explanation: "선행사가 사람이므로 who를 씁니다." },
+      { level: 2, type: "choice", sentence: "I read a book [blank] was written by him.", options: ["who", "which"], expected: "which", explanation: "선행사가 사물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "Do you know the boy [blank] broke the window?", options: ["who", "which"], expected: "who", explanation: "선행사가 사람이므로 who를 씁니다." },
+      { level: 2, type: "choice", sentence: "Where is the cheese [blank] was in the fridge?", options: ["who", "which"], expected: "which", explanation: "선행사가 사물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "The doctor [blank] treated me was very kind.", options: ["who", "which"], expected: "who", explanation: "선행사가 사람이므로 who를 씁니다." },
+      { level: 2, type: "choice", sentence: "This is the bus [blank] goes to the station.", options: ["who", "which"], expected: "which", explanation: "선행사가 사물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "I like the girl [blank] lives next door.", options: ["who", "which"], expected: "who", explanation: "선행사가 사람이므로 who를 씁니다." },
+      { level: 2, type: "choice", sentence: "The cat [blank] is sleeping is mine.", options: ["who", "which"], expected: "which", explanation: "선행사가 동물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "The phone [blank] is on the desk is new.", options: ["who", "which"], expected: "which", explanation: "선행사가 사물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "He is the man [blank] helped us.", options: ["who", "which"], expected: "who", explanation: "선행사가 사람이므로 who를 씁니다." },
+      { level: 2, type: "choice", sentence: "The movie [blank] we watched was great.", options: ["who", "which"], expected: "which", explanation: "선행사가 사물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "Look at the bird [blank] is flying.", options: ["who", "which"], expected: "which", explanation: "선행사가 동물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "I have a friend [blank] speaks Spanish.", options: ["who", "which"], expected: "who", explanation: "선행사가 사람이므로 who를 씁니다." },
+      { level: 2, type: "choice", sentence: "The computer [blank] I bought is fast.", options: ["who", "which"], expected: "which", explanation: "선행사가 사물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "She is a teacher [blank] teaches history.", options: ["who", "which"], expected: "who", explanation: "선행사가 사람이므로 who를 씁니다." },
+      { level: 2, type: "choice", sentence: "The dog [blank] is barking is loud.", options: ["who", "which"], expected: "which", explanation: "선행사가 동물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "I need a bag [blank] is large.", options: ["who", "which"], expected: "which", explanation: "선행사가 사물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "The students [blank] study hard will pass.", options: ["who", "which"], expected: "who", explanation: "선행사가 사람이므로 who를 씁니다." },
+      { level: 2, type: "choice", sentence: "The tree [blank] is in the park is old.", options: ["who", "which"], expected: "which", explanation: "선행사가 식물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "He is the chef [blank] cooked this.", options: ["who", "which"], expected: "who", explanation: "선행사가 사람이므로 who를 씁니다." },
+      { level: 2, type: "choice", sentence: "The driver [blank] drove the bus was nice.", options: ["who", "which"], expected: "who", explanation: "선행사가 사람이므로 who를 씁니다." },
+      { level: 2, type: "choice", sentence: "The watch [blank] I found is gold.", options: ["who", "which"], expected: "which", explanation: "선행사가 사물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "The picture [blank] hangs on the wall is beautiful.", options: ["who", "which"], expected: "which", explanation: "선행사가 사물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "I love the song [blank] is playing now.", options: ["who", "which"], expected: "which", explanation: "선행사가 사물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "The restaurant [blank] opened today is popular.", options: ["who", "which"], expected: "which", explanation: "선행사가 사물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "The shoes [blank] I bought are tight.", options: ["who", "which"], expected: "which", explanation: "선행사가 사물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "I know the player [blank] won the game.", options: ["who", "which"], expected: "who", explanation: "선행사가 사람이므로 who를 씁니다." },
+      { level: 2, type: "choice", sentence: "The camera [blank] takes clear photos is expensive.", options: ["who", "which"], expected: "which", explanation: "선행사가 사물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "The letter [blank] arrived today is for you.", options: ["who", "which"], expected: "which", explanation: "선행사가 사물이므로 which를 씁니다." },
+      { level: 2, type: "choice", sentence: "She is the singer [blank] sang my favorite song.", options: ["who", "which"], expected: "who", explanation: "선행사가 사람이므로 who를 씁니다." },
+
+      // LEVEL 3: 동사 수 일치 (30개)
+      { level: 3, type: "choice", sentence: "Are there any flowers that [blank] like cups?", options: ["look", "looks"], expected: "look", explanation: "선행사 flowers가 복수이므로 복수 동사 look을 씁니다." },
+      { level: 3, type: "choice", sentence: "I know a girl who [blank] French well.", options: ["speak", "speaks"], expected: "speaks", explanation: "선행사 a girl이 단수이므로 단수 동사 speaks를 씁니다." },
+      { level: 3, type: "choice", sentence: "Don't rely on the information that [blank] given to you.", options: ["is", "are"], expected: "is", explanation: "선행사 information이 불가산 명사이므로 is를 씁니다." },
+      { level: 3, type: "choice", sentence: "People who [blank] lots of water are healthy.", options: ["drink", "drinks"], expected: "drink", explanation: "선행사 People이 복수이므로 복수 동사 drink를 씁니다." },
+      { level: 3, type: "choice", sentence: "The dog which [blank] at strangers is mine.", options: ["bark", "barks"], expected: "barks", explanation: "선행사 The dog이 단수이므로 barks를 씁니다." },
+      { level: 3, type: "choice", sentence: "There are many students who [blank] math.", options: ["study", "studies"], expected: "study", explanation: "선행사 students가 복수이므로 study를 씁니다." },
+      { level: 3, type: "choice", sentence: "The cars that [blank] fast are dangerous.", options: ["run", "runs"], expected: "run", explanation: "선행사 cars가 복수이므로 run을 씁니다." },
+      { level: 3, type: "choice", sentence: "The man who [blank] here is my uncle.", options: ["work", "works"], expected: "works", explanation: "선행사 The man이 단수이므로 works를 씁니다." },
+      { level: 3, type: "choice", sentence: "I like cats that [blank] a lot.", options: ["sleep", "sleeps"], expected: "sleep", explanation: "선행사 cats가 복수이므로 sleep을 씁니다." },
+      { level: 3, type: "choice", sentence: "The children who [blank] outside are happy.", options: ["play", "plays"], expected: "play", explanation: "선행사 children이 복수이므로 play를 씁니다." },
+      { level: 3, type: "choice", sentence: "A bird which [blank] sweetly is on the tree.", options: ["sing", "sings"], expected: "sings", explanation: "선행사 A bird가 단수이므로 sings를 씁니다." },
+      { level: 3, type: "choice", sentence: "Computers that [blank] data quickly are expensive.", options: ["process", "processes"], expected: "process", explanation: "선행사 Computers가 복수이므로 process를 씁니다." },
+      { level: 3, type: "choice", sentence: "The woman who [blank] books every day is smart.", options: ["read", "reads"], expected: "reads", explanation: "선행사 The woman이 단수이므로 reads를 씁니다." },
+      { level: 3, type: "choice", sentence: "Boys who [blank] fast can win.", options: ["run", "runs"], expected: "run", explanation: "선행사 Boys가 복수이므로 run을 씁니다." },
+      { level: 3, type: "choice", sentence: "Trees that [blank] tall need lots of water.", options: ["grow", "grows"], expected: "grow", explanation: "선행사 Trees가 복수이므로 grow를 씁니다." },
+      { level: 3, type: "choice", sentence: "A friend who [blank] me is important.", options: ["help", "helps"], expected: "helps", explanation: "선행사 A friend가 단수이므로 helps를 씁니다." },
+      { level: 3, type: "choice", sentence: "The chefs who [blank] well are famous.", options: ["cook", "cooks"], expected: "cook", explanation: "선행사 chefs가 복수이므로 cook을 씁니다." },
+      { level: 3, type: "choice", sentence: "The driver who [blank] carefully is safe.", options: ["drive", "drives"], expected: "drives", explanation: "선행사 driver가 단수이므로 drives를 씁니다." },
+      { level: 3, type: "choice", sentence: "Watches that [blank] time accurately are good.", options: ["show", "shows"], expected: "show", explanation: "선행사 Watches가 복수이므로 show를 씁니다." },
+      { level: 3, type: "choice", sentence: "The picture which [blank] on the wall is nice.", options: ["hang", "hangs"], expected: "hangs", explanation: "선행사 The picture가 단수이므로 hangs를 씁니다." },
+      { level: 3, type: "choice", sentence: "Songs that [blank] good are popular.", options: ["sound", "sounds"], expected: "sound", explanation: "선행사 Songs가 복수이므로 sound를 씁니다." },
+      { level: 3, type: "choice", sentence: "Restaurants which [blank] early are rare.", options: ["open", "opens"], expected: "open", explanation: "선행사 Restaurants가 복수이므로 open을 씁니다." },
+      { level: 3, type: "choice", sentence: "Shoes that [blank] perfectly are comfortable.", options: ["fit", "fits"], expected: "fit", explanation: "선행사 Shoes가 복수이므로 fit을 씁니다." },
+      { level: 3, type: "choice", sentence: "A camera which [blank] clear photos is needed.", options: ["take", "takes"], expected: "takes", explanation: "선행사 A camera가 단수이므로 takes를 씁니다." },
+      { level: 3, type: "choice", sentence: "Letters that [blank] late cause trouble.", options: ["arrive", "arrives"], expected: "arrive", explanation: "선행사 Letters가 복수이므로 arrive를 씁니다." },
+      { level: 3, type: "choice", sentence: "The teachers who [blank] English are here.", options: ["teach", "teaches"], expected: "teach", explanation: "선행사 teachers가 복수이므로 teach를 씁니다." },
+      { level: 3, type: "choice", sentence: "Dogs that [blank] loudly can be annoying.", options: ["bark", "barks"], expected: "bark", explanation: "선행사 Dogs가 복수이므로 bark를 씁니다." },
+      { level: 3, type: "choice", sentence: "Books that [blank] good stories are loved.", options: ["contain", "contains"], expected: "contain", explanation: "선행사 Books가 복수이므로 contain을 씁니다." },
+      { level: 3, type: "choice", sentence: "The house which [blank] on the hill is big.", options: ["stand", "stands"], expected: "stands", explanation: "선행사 The house가 단수이므로 stands를 씁니다." },
+      { level: 3, type: "choice", sentence: "Girls who [blank] brightly look happy.", options: ["smile", "smiles"], expected: "smile", explanation: "선행사 Girls가 복수이므로 smile을 씁니다." },
+
+      // LEVEL 4: 블록 배열 조립 (30개)
+      { level: 4, type: "arrange", mainClause: "The book is mine.", subClause: "The book is on the desk.", options: ["The book", "which", "is on the desk", "is mine"], expected: ["The book", "which", "is on the desk", "is mine"], explanation: "선행사 바로 뒤에 관계대명사절이 오고, 그 뒤에 주절의 동사가 옵니다." },
+      { level: 4, type: "arrange", mainClause: "The man is my uncle.", subClause: "The man is wearing glasses.", options: ["The man", "who", "is wearing glasses", "is my uncle"], expected: ["The man", "who", "is wearing glasses", "is my uncle"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The cat is cute.", subClause: "The cat sleeps on the bed.", options: ["The cat", "which", "sleeps on the bed", "is cute"], expected: ["The cat", "which", "sleeps on the bed", "is cute"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The girl is kind.", subClause: "The girl helped me.", options: ["The girl", "who", "helped me", "is kind"], expected: ["The girl", "who", "helped me", "is kind"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The bags are heavy.", subClause: "The bags are on the floor.", options: ["The bags", "which", "are on the floor", "are heavy"], expected: ["The bags", "which", "are on the floor", "are heavy"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The boy won the prize.", subClause: "The boy studies hard.", options: ["The boy", "who", "studies hard", "won the prize"], expected: ["The boy", "who", "studies hard", "won the prize"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The car is fast.", subClause: "The car is red.", options: ["The car", "which", "is red", "is fast"], expected: ["The car", "which", "is red", "is fast"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The teacher is strict.", subClause: "The teacher teaches math.", options: ["The teacher", "who", "teaches math", "is strict"], expected: ["The teacher", "who", "teaches math", "is strict"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The house is old.", subClause: "The house has a blue roof.", options: ["The house", "which", "has a blue roof", "is old"], expected: ["The house", "which", "has a blue roof", "is old"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The dog is loud.", subClause: "The dog barks at night.", options: ["The dog", "which", "barks at night", "is loud"], expected: ["The dog", "which", "barks at night", "is loud"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The phone is new.", subClause: "The phone is on the table.", options: ["The phone", "which", "is on the table", "is new"], expected: ["The phone", "which", "is on the table", "is new"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The doctor is famous.", subClause: "The doctor works here.", options: ["The doctor", "who", "works here", "is famous"], expected: ["The doctor", "who", "works here", "is famous"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The students are smart.", subClause: "The students read books.", options: ["The students", "who", "read books", "are smart"], expected: ["The students", "who", "read books", "are smart"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The tree is tall.", subClause: "The tree grows in my yard.", options: ["The tree", "which", "grows in my yard", "is tall"], expected: ["The tree", "which", "grows in my yard", "is tall"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The woman is my boss.", subClause: "The woman wears a suit.", options: ["The woman", "who", "wears a suit", "is my boss"], expected: ["The woman", "who", "wears a suit", "is my boss"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The movie is boring.", subClause: "The movie is long.", options: ["The movie", "which", "is long", "is boring"], expected: ["The movie", "which", "is long", "is boring"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The bird is yellow.", subClause: "The bird sings loudly.", options: ["The bird", "which", "sings loudly", "is yellow"], expected: ["The bird", "which", "sings loudly", "is yellow"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The friend is helpful.", subClause: "The friend lives nearby.", options: ["The friend", "who", "lives nearby", "is helpful"], expected: ["The friend", "who", "lives nearby", "is helpful"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The computer is broken.", subClause: "The computer is black.", options: ["The computer", "which", "is black", "is broken"], expected: ["The computer", "which", "is black", "is broken"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The shoes are dirty.", subClause: "The shoes are outside.", options: ["The shoes", "which", "are outside", "are dirty"], expected: ["The shoes", "which", "are outside", "are dirty"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The park is beautiful.", subClause: "The park is near my house.", options: ["The park", "which", "is near my house", "is beautiful"], expected: ["The park", "which", "is near my house", "is beautiful"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The singer is popular.", subClause: "The singer sang this song.", options: ["The singer", "who", "sang this song", "is popular"], expected: ["The singer", "who", "sang this song", "is popular"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The camera is heavy.", subClause: "The camera takes good photos.", options: ["The camera", "which", "takes good photos", "is heavy"], expected: ["The camera", "which", "takes good photos", "is heavy"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The letter is important.", subClause: "The letter came today.", options: ["The letter", "which", "came today", "is important"], expected: ["The letter", "which", "came today", "is important"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The driver is skilled.", subClause: "The driver drove the bus.", options: ["The driver", "who", "drove the bus", "is skilled"], expected: ["The driver", "who", "drove the bus", "is skilled"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The watch is cheap.", subClause: "The watch is broken.", options: ["The watch", "which", "is broken", "is cheap"], expected: ["The watch", "which", "is broken", "is cheap"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The picture is nice.", subClause: "The picture is on the wall.", options: ["The picture", "which", "is on the wall", "is nice"], expected: ["The picture", "which", "is on the wall", "is nice"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The song is famous.", subClause: "The song is playing now.", options: ["The song", "which", "is playing now", "is famous"], expected: ["The song", "which", "is playing now", "is famous"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The chef is busy.", subClause: "The chef cooks well.", options: ["The chef", "who", "cooks well", "is busy"], expected: ["The chef", "who", "cooks well", "is busy"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+      { level: 4, type: "arrange", mainClause: "The river is deep.", subClause: "The river flows fast.", options: ["The river", "which", "flows fast", "is deep"], expected: ["The river", "which", "flows fast", "is deep"], explanation: "선행사 바로 뒤에 관계사절을 삽입합니다." },
+
+      // LEVEL 5: 부분 타이핑 (30개)
+      { level: 5, type: "type_clause", s1: "I saw a girl.", s2: "The girl was crying.", prefix: "I saw a girl ", expected: "who was crying", explanation: "사람 선행사 girl 뒤에 who를 쓰고 나머지를 씁니다." },
+      { level: 5, type: "type_clause", s1: "He bought a laptop.", s2: "The laptop is very fast.", prefix: "He bought a laptop ", expected: "which is very fast", explanation: "사물 선행사 laptop 뒤에 which를 씁니다." },
+      { level: 5, type: "type_clause", s1: "Do you know the boy?", s2: "The boy broke the window.", prefix: "Do you know the boy ", expected: "who broke the window", explanation: "사람 선행사 boy 뒤에 who를 씁니다." },
+      { level: 5, type: "type_clause", s1: "I lost the pen.", s2: "The pen was very expensive.", prefix: "I lost the pen ", expected: "which was very expensive", explanation: "사물 선행사 pen 뒤에 which를 씁니다." },
+      { level: 5, type: "type_clause", s1: "He met the actor.", s2: "The actor starred in the movie.", prefix: "He met the actor ", expected: "who starred in the movie", explanation: "사람 선행사 actor 뒤에 who를 씁니다." },
+      { level: 5, type: "type_clause", s1: "They painted the wall.", s2: "The wall was dirty.", prefix: "They painted the wall ", expected: "which was dirty", explanation: "사물 선행사 wall 뒤에 which를 씁니다." },
+      { level: 5, type: "type_clause", s1: "I have a brother.", s2: "The brother lives in Seoul.", prefix: "I have a brother ", expected: "who lives in Seoul", explanation: "사람 선행사 brother 뒤에 who를 씁니다." },
+      { level: 5, type: "type_clause", s1: "She wants the dress.", s2: "The dress is red.", prefix: "She wants the dress ", expected: "which is red", explanation: "사물 선행사 dress 뒤에 which를 씁니다." },
+      { level: 5, type: "type_clause", s1: "We found a dog.", s2: "The dog was lost.", prefix: "We found a dog ", expected: "which was lost", explanation: "동물 선행사 dog 뒤에 which를 씁니다." },
+      { level: 5, type: "type_clause", s1: "I like the singer.", s2: "The singer sings well.", prefix: "I like the singer ", expected: "who sings well", explanation: "사람 선행사 singer 뒤에 who를 씁니다." },
+      { level: 5, type: "type_clause", s1: "He broke the cup.", s2: "The cup was mine.", prefix: "He broke the cup ", expected: "which was mine", explanation: "사물 선행사 cup 뒤에 which를 씁니다." },
+      { level: 5, type: "type_clause", s1: "They need a person.", s2: "The person can speak English.", prefix: "They need a person ", expected: "who can speak English", explanation: "사람 선행사 person 뒤에 who를 씁니다." },
+      { level: 5, type: "type_clause", s1: "I bought a house.", s2: "The house has a pool.", prefix: "I bought a house ", expected: "which has a pool", explanation: "사물 선행사 house 뒤에 which를 씁니다." },
+      { level: 5, type: "type_clause", s1: "She talked to the man.", s2: "The man was sitting there.", prefix: "She talked to the man ", expected: "who was sitting there", explanation: "사람 선행사 man 뒤에 who를 씁니다." },
+      { level: 5, type: "type_clause", s1: "We watched a movie.", s2: "The movie was scary.", prefix: "We watched a movie ", expected: "which was scary", explanation: "사물 선행사 movie 뒤에 which를 씁니다." },
+      { level: 5, type: "type_clause", s1: "He read the book.", s2: "The book is popular.", prefix: "He read the book ", expected: "which is popular", explanation: "사물 선행사 book 뒤에 which를 씁니다." },
+      { level: 5, type: "type_clause", s1: "I met the doctor.", s2: "The doctor is very famous.", prefix: "I met the doctor ", expected: "who is very famous", explanation: "사람 선행사 doctor 뒤에 who를 씁니다." },
+      { level: 5, type: "type_clause", s1: "They saw the car.", s2: "The car was moving fast.", prefix: "They saw the car ", expected: "which was moving fast", explanation: "사물 선행사 car 뒤에 which를 씁니다." },
+      { level: 5, type: "type_clause", s1: "She likes the teacher.", s2: "The teacher is kind.", prefix: "She likes the teacher ", expected: "who is kind", explanation: "사람 선행사 teacher 뒤에 who를 씁니다." },
+      { level: 5, type: "type_clause", s1: "I ate the cake.", s2: "The cake was sweet.", prefix: "I ate the cake ", expected: "which was sweet", explanation: "사물 선행사 cake 뒤에 which를 씁니다." },
+      { level: 5, type: "type_clause", s1: "We need the key.", s2: "The key opens this door.", prefix: "We need the key ", expected: "which opens this door", explanation: "사물 선행사 key 뒤에 which를 씁니다." },
+      { level: 5, type: "type_clause", s1: "He loves the woman.", s2: "The woman is smart.", prefix: "He loves the woman ", expected: "who is smart", explanation: "사람 선행사 woman 뒤에 who를 씁니다." },
+      { level: 5, type: "type_clause", s1: "I found the shoes.", s2: "The shoes are black.", prefix: "I found the shoes ", expected: "which are black", explanation: "사물 선행사 shoes 뒤에 which를 씁니다." },
+      { level: 5, type: "type_clause", s1: "They hired a worker.", s2: "The worker is strong.", prefix: "They hired a worker ", expected: "who is strong", explanation: "사람 선행사 worker 뒤에 who를 씁니다." },
+      { level: 5, type: "type_clause", s1: "She broke the glass.", s2: "The glass was on the table.", prefix: "She broke the glass ", expected: "which was on the table", explanation: "사물 선행사 glass 뒤에 which를 씁니다." },
+      { level: 5, type: "type_clause", s1: "I respect the leader.", s2: "The leader is honest.", prefix: "I respect the leader ", expected: "who is honest", explanation: "사람 선행사 leader 뒤에 who를 씁니다." },
+      { level: 5, type: "type_clause", s1: "He sold the bike.", s2: "The bike was old.", prefix: "He sold the bike ", expected: "which was old", explanation: "사물 선행사 bike 뒤에 which를 씁니다." },
+      { level: 5, type: "type_clause", s1: "We caught the thief.", s2: "The thief stole the bag.", prefix: "We caught the thief ", expected: "who stole the bag", explanation: "사람 선행사 thief 뒤에 who를 씁니다." },
+      { level: 5, type: "type_clause", s1: "I opened the box.", s2: "The box was heavy.", prefix: "I opened the box ", expected: "which was heavy", explanation: "사물 선행사 box 뒤에 which를 씁니다." },
+      { level: 5, type: "type_clause", s1: "She visited a friend.", s2: "The friend was sick.", prefix: "She visited a friend ", expected: "who was sick", explanation: "사람 선행사 friend 뒤에 who를 씁니다." },
+
+      // LEVEL 6: 부분 타이핑 심화 (30개)
+      { level: 6, type: "type_clause", s1: "She has a dog.", s2: "The dog likes to swim.", prefix: "She has a dog ", expected: "which likes to swim", explanation: "동물 선행사 dog 뒤에 which를 씁니다." },
+      { level: 6, type: "type_clause", s1: "I need a friend.", s2: "The friend can help me.", prefix: "I need a friend ", expected: "who can help me", explanation: "사람 선행사 friend 뒤에 who를 씁니다." },
+      { level: 6, type: "type_clause", s1: "We live in a house.", s2: "The house has a garden.", prefix: "We live in a house ", expected: "which has a garden", explanation: "사물 선행사 house 뒤에 which를 씁니다." },
+      { level: 6, type: "type_clause", s1: "I saw a bird.", s2: "The bird was singing loudly.", prefix: "I saw a bird ", expected: "which was singing loudly", explanation: "동물 선행사 bird 뒤에 which를 씁니다." },
+      { level: 6, type: "type_clause", s1: "We hired a guide.", s2: "The guide knows the area.", prefix: "We hired a guide ", expected: "who knows the area", explanation: "사람 선행사 guide 뒤에 who를 씁니다." },
+      { level: 6, type: "type_clause", s1: "She bought a phone.", s2: "The phone takes good photos.", prefix: "She bought a phone ", expected: "which takes good photos", explanation: "사물 선행사 phone 뒤에 which를 씁니다." },
+      { level: 6, type: "type_clause", s1: "I know a place.", s2: "The place is very quiet.", prefix: "I know a place ", expected: "which is very quiet", explanation: "사물 장소 선행사 place 뒤에 which를 씁니다." },
+      { level: 6, type: "type_clause", s1: "He has a brother.", s2: "The brother plays soccer.", prefix: "He has a brother ", expected: "who plays soccer", explanation: "사람 선행사 brother 뒤에 who를 씁니다." },
+      { level: 6, type: "type_clause", s1: "They want a car.", s2: "The car is cheap.", prefix: "They want a car ", expected: "which is cheap", explanation: "사물 선행사 car 뒤에 which를 씁니다." },
+      { level: 6, type: "type_clause", s1: "I met a girl.", s2: "The girl has long hair.", prefix: "I met a girl ", expected: "who has long hair", explanation: "사람 선행사 girl 뒤에 who를 씁니다." },
+      { level: 6, type: "type_clause", s1: "She likes the cat.", s2: "The cat is cute.", prefix: "She likes the cat ", expected: "which is cute", explanation: "동물 선행사 cat 뒤에 which를 씁니다." },
+      { level: 6, type: "type_clause", s1: "He lost the key.", s2: "The key opens his car.", prefix: "He lost the key ", expected: "which opens his car", explanation: "사물 선행사 key 뒤에 which를 씁니다." },
+      { level: 6, type: "type_clause", s1: "We saw the man.", s2: "The man was angry.", prefix: "We saw the man ", expected: "who was angry", explanation: "사람 선행사 man 뒤에 who를 씁니다." },
+      { level: 6, type: "type_clause", s1: "I bought a shirt.", s2: "The shirt is too big.", prefix: "I bought a shirt ", expected: "which is too big", explanation: "사물 선행사 shirt 뒤에 which를 씁니다." },
+      { level: 6, type: "type_clause", s1: "They found a boy.", s2: "The boy was sleeping.", prefix: "They found a boy ", expected: "who was sleeping", explanation: "사람 선행사 boy 뒤에 who를 씁니다." },
+      { level: 6, type: "type_clause", s1: "She chose the bag.", s2: "The bag was blue.", prefix: "She chose the bag ", expected: "which was blue", explanation: "사물 선행사 bag 뒤에 which를 씁니다." },
+      { level: 6, type: "type_clause", s1: "I called the doctor.", s2: "The doctor arrived late.", prefix: "I called the doctor ", expected: "who arrived late", explanation: "사람 선행사 doctor 뒤에 who를 씁니다." },
+      { level: 6, type: "type_clause", s1: "He fixed the watch.", s2: "The watch was broken.", prefix: "He fixed the watch ", expected: "which was broken", explanation: "사물 선행사 watch 뒤에 which를 씁니다." },
+      { level: 6, type: "type_clause", s1: "We need a person.", s2: "The person can drive.", prefix: "We need a person ", expected: "who can drive", explanation: "사람 선행사 person 뒤에 who를 씁니다." },
+      { level: 6, type: "type_clause", s1: "I read a story.", s2: "The story was sad.", prefix: "I read a story ", expected: "which was sad", explanation: "사물 선행사 story 뒤에 which를 씁니다." },
+      { level: 6, type: "type_clause", s1: "She trusts the friend.", s2: "The friend is honest.", prefix: "She trusts the friend ", expected: "who is honest", explanation: "사람 선행사 friend 뒤에 who를 씁니다." },
+      { level: 6, type: "type_clause", s1: "They built a wall.", s2: "The wall is high.", prefix: "They built a wall ", expected: "which is high", explanation: "사물 선행사 wall 뒤에 which를 씁니다." },
+      { level: 6, type: "type_clause", s1: "I respect the man.", s2: "The man works hard.", prefix: "I respect the man ", expected: "who works hard", explanation: "사람 선행사 man 뒤에 who를 씁니다." },
+      { level: 6, type: "type_clause", s1: "He caught the fish.", s2: "The fish was big.", prefix: "He caught the fish ", expected: "which was big", explanation: "동물 선행사 fish 뒤에 which를 씁니다." },
+      { level: 6, type: "type_clause", s1: "We love the teacher.", s2: "The teacher is funny.", prefix: "We love the teacher ", expected: "who is funny", explanation: "사람 선행사 teacher 뒤에 who를 씁니다." },
+      { level: 6, type: "type_clause", s1: "I painted the door.", s2: "The door was white.", prefix: "I painted the door ", expected: "which was white", explanation: "사물 선행사 door 뒤에 which를 씁니다." },
+      { level: 6, type: "type_clause", s1: "She asked a boy.", s2: "The boy knew the answer.", prefix: "She asked a boy ", expected: "who knew the answer", explanation: "사람 선행사 boy 뒤에 who를 씁니다." },
+      { level: 6, type: "type_clause", s1: "They cleaned the room.", s2: "The room was messy.", prefix: "They cleaned the room ", expected: "which was messy", explanation: "사물 선행사 room 뒤에 which를 씁니다." },
+      { level: 6, type: "type_clause", s1: "I saw the woman.", s2: "The woman was running.", prefix: "I saw the woman ", expected: "who was running", explanation: "사람 선행사 woman 뒤에 who를 씁니다." },
+      { level: 6, type: "type_clause", s1: "He ate the apple.", s2: "The apple was red.", prefix: "He ate the apple ", expected: "which was red", explanation: "사물 선행사 apple 뒤에 which를 씁니다." },
+
+      // LEVEL 7: 목적어 자리 병합 전체 타이핑 (30개)
+      { level: 7, type: "type_full", s1: "I know the woman.", s2: "The woman is talking to the teacher.", expected: "I know the woman who is talking to the teacher", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "He is driving a car.", s2: "The car uses electricity.", expected: "He is driving a car which uses electricity", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "They helped the man.", s2: "The man was injured.", expected: "They helped the man who was injured", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "I found a coin.", s2: "The coin is very old.", expected: "I found a coin which is very old", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "He visited the doctor.", s2: "The doctor cured him.", expected: "He visited the doctor who cured him", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "They saw a dog.", s2: "The dog was barking loudly.", expected: "They saw a dog which was barking loudly", explanation: "동물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "I bought a book.", s2: "The book is interesting.", expected: "I bought a book which is interesting", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "She met a boy.", s2: "The boy is very tall.", expected: "She met a boy who is very tall", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "We have a house.", s2: "The house is near the park.", expected: "We have a house which is near the park", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "I talked to the girl.", s2: "The girl is from Canada.", expected: "I talked to the girl who is from Canada", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "He fixed the computer.", s2: "The computer was broken.", expected: "He fixed the computer which was broken", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "They hired a man.", s2: "The man speaks Spanish.", expected: "They hired a man who speaks Spanish", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "I read a story.", s2: "The story is about a hero.", expected: "I read a story which is about a hero", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "She likes the teacher.", s2: "The teacher is very funny.", expected: "She likes the teacher who is very funny", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "We need a car.", s2: "The car is fast.", expected: "We need a car which is fast", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "I saw the students.", s2: "The students are studying.", expected: "I saw the students who are studying", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "He lost the pen.", s2: "The pen is red.", expected: "He lost the pen which is red", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "They respect the woman.", s2: "The woman works hard.", expected: "They respect the woman who works hard", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "I watched a movie.", s2: "The movie was sad.", expected: "I watched a movie which was sad", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "She called the boy.", s2: "The boy was late.", expected: "She called the boy who was late", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "We visited the museum.", s2: "The museum is huge.", expected: "We visited the museum which is huge", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "I trust the friend.", s2: "The friend is honest.", expected: "I trust the friend who is honest", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "He ate the apple.", s2: "The apple was green.", expected: "He ate the apple which was green", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "They chased the thief.", s2: "The thief stole money.", expected: "They chased the thief who stole money", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "I bought the shoes.", s2: "The shoes are comfortable.", expected: "I bought the shoes which are comfortable", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "She saw a baby.", s2: "The baby was sleeping.", expected: "She saw a baby who was sleeping", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "We painted the wall.", s2: "The wall was dirty.", expected: "We painted the wall which was dirty", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "I remember the man.", s2: "The man helped me.", expected: "I remember the man who helped me", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "He cleaned the room.", s2: "The room was messy.", expected: "He cleaned the room which was messy", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 7, type: "type_full", s1: "They asked the girl.", s2: "The girl knew everything.", expected: "They asked the girl who knew everything", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+
+      // LEVEL 8: 목적어 자리 병합 전체 타이핑 (30개)
+      { level: 8, type: "type_full", s1: "She bought the shoes.", s2: "The shoes were on sale.", expected: "She bought the shoes which were on sale", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "I met a boy.", s2: "The boy plays the piano well.", expected: "I met a boy who plays the piano well", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "We ate the cake.", s2: "The cake was very sweet.", expected: "We ate the cake which was very sweet", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "I like the teacher.", s2: "The teacher is very kind.", expected: "I like the teacher who is very kind", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "She read the story.", s2: "The story was interesting.", expected: "She read the story which was interesting", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "He caught the fish.", s2: "The fish was huge.", expected: "He caught the fish which was huge", explanation: "동물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "I lost the watch.", s2: "The watch was expensive.", expected: "I lost the watch which was expensive", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "They know a man.", s2: "The man is very rich.", expected: "They know a man who is very rich", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "We built a house.", s2: "The house is strong.", expected: "We built a house which is strong", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "I miss the friend.", s2: "The friend moved away.", expected: "I miss the friend who moved away", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "She loves the dress.", s2: "The dress is beautiful.", expected: "She loves the dress which is beautiful", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "He helped a woman.", s2: "The woman was old.", expected: "He helped a woman who was old", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "I found the key.", s2: "The key was lost.", expected: "I found the key which was lost", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "They saw the boy.", s2: "The boy was running away.", expected: "They saw the boy who was running away", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "We need the book.", s2: "The book is on the desk.", expected: "We need the book which is on the desk", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "I called a doctor.", s2: "The doctor came quickly.", expected: "I called a doctor who came quickly", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "She bought a car.", s2: "The car is blue.", expected: "She bought a car which is blue", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "He respects the leader.", s2: "The leader is brave.", expected: "He respects the leader who is brave", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "I saw the picture.", s2: "The picture was nice.", expected: "I saw the picture which was nice", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "They met a girl.", s2: "The girl was singing.", expected: "They met a girl who was singing", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "We bought the fruit.", s2: "The fruit is fresh.", expected: "We bought the fruit which is fresh", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "I asked the student.", s2: "The student knew it.", expected: "I asked the student who knew it", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "She closed the window.", s2: "The window was open.", expected: "She closed the window which was open", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "He saved the boy.", s2: "The boy was drowning.", expected: "He saved the boy who was drowning", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "I drank the water.", s2: "The water was cold.", expected: "I drank the water which was cold", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "They trust the man.", s2: "The man is honest.", expected: "They trust the man who is honest", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "We used the computer.", s2: "The computer is fast.", expected: "We used the computer which is fast", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "I hired the worker.", s2: "The worker is smart.", expected: "I hired the worker who is smart", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "She ate the pizza.", s2: "The pizza was hot.", expected: "She ate the pizza which was hot", explanation: "사물 선행사 뒤에 which를 넣어 하나로 묶습니다." },
+      { level: 8, type: "type_full", s1: "He likes the friend.", s2: "The friend is funny.", expected: "He likes the friend who is funny", explanation: "사람 선행사 뒤에 who를 넣어 하나로 묶습니다." },
+
+      // LEVEL 9: 주어 자리 병합 전체 타이핑 (30개)
+      { level: 9, type: "type_full", s1: "The man is my uncle.", s2: "The man lives next door.", expected: "The man who lives next door is my uncle", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The book is mine.", s2: "The book is on the desk.", expected: "The book which is on the desk is mine", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The girl is very smart.", s2: "The girl sits next to me.", expected: "The girl who sits next to me is very smart", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The cat is sleeping.", s2: "The cat is on the sofa.", expected: "The cat which is on the sofa is sleeping", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The boy is my brother.", s2: "The boy is playing soccer.", expected: "The boy who is playing soccer is my brother", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The car is expensive.", s2: "The car is parked outside.", expected: "The car which is parked outside is expensive", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The teacher is kind.", s2: "The teacher teaches math.", expected: "The teacher who teaches math is kind", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The house is old.", s2: "The house has a blue roof.", expected: "The house which has a blue roof is old", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The student is late.", s2: "The student missed the bus.", expected: "The student who missed the bus is late", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The phone is new.", s2: "The phone is on the table.", expected: "The phone which is on the table is new", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The woman is famous.", s2: "The woman works here.", expected: "The woman who works here is famous", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The dog is loud.", s2: "The dog barks at night.", expected: "The dog which barks at night is loud", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The child is crying.", s2: "The child lost his toy.", expected: "The child who lost his toy is crying", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The tree is tall.", s2: "The tree grows in my yard.", expected: "The tree which grows in my yard is tall", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The doctor is good.", s2: "The doctor cured me.", expected: "The doctor who cured me is good", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The movie is boring.", s2: "The movie is long.", expected: "The movie which is long is boring", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The driver is skilled.", s2: "The driver drove the bus.", expected: "The driver who drove the bus is skilled", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The bag is heavy.", s2: "The bag is full of books.", expected: "The bag which is full of books is heavy", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The girl is happy.", s2: "The girl won the prize.", expected: "The girl who won the prize is happy", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The pen is blue.", s2: "The pen is in my pocket.", expected: "The pen which is in my pocket is blue", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The friend is helpful.", s2: "The friend lives nearby.", expected: "The friend who lives nearby is helpful", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The picture is beautiful.", s2: "The picture is on the wall.", expected: "The picture which is on the wall is beautiful", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The boy is strong.", s2: "The boy works out daily.", expected: "The boy who works out daily is strong", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The watch is cheap.", s2: "The watch is broken.", expected: "The watch which is broken is cheap", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The singer is popular.", s2: "The singer sang this song.", expected: "The singer who sang this song is popular", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The river is deep.", s2: "The river flows fast.", expected: "The river which flows fast is deep", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The chef is busy.", s2: "The chef cooks well.", expected: "The chef who cooks well is busy", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The letter is important.", s2: "The letter came today.", expected: "The letter which came today is important", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The baby is cute.", s2: "The baby is smiling.", expected: "The baby who is smiling is cute", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+      { level: 9, type: "type_full", s1: "The camera is heavy.", s2: "The camera takes good photos.", expected: "The camera which takes good photos is heavy", explanation: "주어 바로 뒤에 관계대명사절을 삽입해야 합니다." },
+
+      // LEVEL 10: 주어 자리 병합 전체 타이핑 (30개)
+      { level: 10, type: "type_full", s1: "The computer is broken.", s2: "The computer is in my room.", expected: "The computer which is in my room is broken", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The students are studying.", s2: "The students want to pass.", expected: "The students who want to pass are studying", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The bus is late.", s2: "The bus goes to the airport.", expected: "The bus which goes to the airport is late", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The house is old.", s2: "The house has a red roof.", expected: "The house which has a red roof is old", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The woman is a doctor.", s2: "The woman lives here.", expected: "The woman who lives here is a doctor", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The shoes are mine.", s2: "The shoes are under the bed.", expected: "The shoes which are under the bed are mine", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The man is friendly.", s2: "The man works at the store.", expected: "The man who works at the store is friendly", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The game is fun.", s2: "The game is on my phone.", expected: "The game which is on my phone is fun", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The boy is smart.", s2: "The boy studies hard.", expected: "The boy who studies hard is smart", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The cake is delicious.", s2: "The cake is on the table.", expected: "The cake which is on the table is delicious", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The teacher is strict.", s2: "The teacher teaches science.", expected: "The teacher who teaches science is strict", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The key is lost.", s2: "The key opens this door.", expected: "The key which opens this door is lost", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The girl is tired.", s2: "The girl ran fast.", expected: "The girl who ran fast is tired", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The bag is heavy.", s2: "The bag is full of coins.", expected: "The bag which is full of coins is heavy", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The friend is kind.", s2: "The friend helped me.", expected: "The friend who helped me is kind", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The book is boring.", s2: "The book is thick.", expected: "The book which is thick is boring", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The leader is brave.", s2: "The leader guides us.", expected: "The leader who guides us is brave", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The water is cold.", s2: "The water is in the glass.", expected: "The water which is in the glass is cold", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The player is tall.", s2: "The player caught the ball.", expected: "The player who caught the ball is tall", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The mirror is broken.", s2: "The mirror is in the bathroom.", expected: "The mirror which is in the bathroom is broken", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The uncle is rich.", s2: "The uncle lives in Paris.", expected: "The uncle who lives in Paris is rich", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The bike is fast.", s2: "The bike is new.", expected: "The bike which is new is fast", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The nurse is busy.", s2: "The nurse helps doctors.", expected: "The nurse who helps doctors is busy", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The tree is huge.", s2: "The tree grows slowly.", expected: "The tree which grows slowly is huge", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The singer is great.", s2: "The singer won the award.", expected: "The singer who won the award is great", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The shirt is small.", s2: "The shirt is white.", expected: "The shirt which is white is small", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The man is quiet.", s2: "The man reads a book.", expected: "The man who reads a book is quiet", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The door is heavy.", s2: "The door is made of wood.", expected: "The door which is made of wood is heavy", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The cat is fast.", s2: "The cat caught the mouse.", expected: "The cat who caught the mouse is fast", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." },
+      { level: 10, type: "type_full", s1: "The window is open.", s2: "The window faces the street.", expected: "The window which faces the street is open", explanation: "주어 바로 뒤에 관계대명사절 삽입 및 동사 어순 주의." }
+    ];
+
+    function App() {
+      const [gameState, setGameState] = useState('locked');
+      const [passwordInput, setPasswordInput] = useState('');
+      const [passwordError, setPasswordError] = useState(false);
+
+      // Dynamic Leveling States
+      const [currentLevel, setCurrentLevel] = useState(1);
+      const [levelProgress, setLevelProgress] = useState(0); 
+      const [currentDrill, setCurrentDrill] = useState(null);
+      const pendingLevelRef = useRef(1);
+      const [reviewIdx, setReviewIdx] = useState(0);
+
+      const [score, setScore] = useState(0);
+      const [combo, setCombo] = useState(0);
+      const [maxCombo, setMaxCombo] = useState(0);
+      const [timeLeft, setTimeLeft] = useState(200);
+      const [lap, setLap] = useState(1);
+      const [stats, setStats] = useState({ correct: 0, total: 0 });
+      const [mistakes, setMistakes] = useState([]);
+
+      const [selectedParts, setSelectedParts] = useState([]);
+      const [shuffledOptions, setShuffledOptions] = useState([]);
+      const [typedInput, setTypedInput] = useState('');
+      
+      const [feedback, setFeedback] = useState(null);
+      const [userWrongInput, setUserWrongInput] = useState('');
+      const [wrongTimeoutId, setWrongTimeoutId] = useState(null);
+      
+      const [personalBest, setPersonalBest] = useState({ score: 0, tier: '아이언 (Iron)' });
+      const [prevTier, setPrevTier] = useState('아이언 (Iron)');
+      const [showTierUpAnimation, setShowTierUpAnimation] = useState(false);
+
+      const inputRef = useRef(null);
+
+      useEffect(() => {
+        const savedBest = localStorage.getItem('relative_arcade_best');
+        if (savedBest) {
+          setPersonalBest(JSON.parse(savedBest));
+        }
+      }, []);
+
+      const getTierMetadata = (currentScore) => {
+        const tier = TIERS_CONFIG.find(t => currentScore >= t.min);
+        return tier || TIERS_CONFIG[TIERS_CONFIG.length - 1];
+      };
+
+      const handleLogin = (e) => {
+        e.preventDefault();
+        if (passwordInput === '0329') {
+          setGameState('welcome');
+          setPasswordError(false);
+        } else {
+          setPasswordError(true);
+          setPasswordInput('');
+          setTimeout(() => setPasswordError(false), 500);
+        }
+      };
+
+      useEffect(() => {
+        if (gameState === 'playing' && timeLeft > 0) {
+          const timer = setInterval(() => {
+            setTimeLeft(prev => {
+              if (prev <= 1) {
+                clearInterval(timer);
+                finishSpeedrun();
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+          return () => clearInterval(timer);
+        }
+      }, [gameState, timeLeft]);
+
+      useEffect(() => {
+        if (gameState === 'playing') {
+          const currentTier = getTierMetadata(score).name;
+          if (currentTier !== prevTier) {
+            const currentIndex = TIERS_CONFIG.findIndex(t => t.name === currentTier);
+            const prevIndex = TIERS_CONFIG.findIndex(t => t.name === prevTier);
+            if (currentIndex < prevIndex) {
+              setShowTierUpAnimation(true);
+              setTimeout(() => setShowTierUpAnimation(false), 1500);
+            }
+            setPrevTier(currentTier);
+          }
+        }
+      }, [score, prevTier, gameState]);
+
+      const finishSpeedrun = () => {
+        setGameState('result');
+      };
+
+      useEffect(() => {
+         if(gameState === 'result') {
+            const finalTier = getTierMetadata(score).name;
+            const currentRecord = { score, tier: finalTier };
+            if (score > personalBest.score) {
+              setPersonalBest(currentRecord);
+              localStorage.setItem('relative_arcade_best', JSON.stringify(currentRecord));
+            }
+         }
+      }, [gameState, score]);
+
+      const loadNewDrill = (lvl) => {
+        if (gameState === 'reviewing') {
+          const nextIdx = reviewIdx + 1;
+          if (nextIdx >= mistakes.length) {
+            setGameState('review_done');
+          } else {
+            setReviewIdx(nextIdx);
+            const nextDrill = mistakes[nextIdx];
+            setCurrentDrill(nextDrill);
+            initDrill(nextDrill);
+          }
+          return;
+        }
+
+        const pool = ALL_DRILLS_POOL.filter(d => d.level === lvl);
+        let newDrill = pool[Math.floor(Math.random() * pool.length)];
+
+        if (currentDrill && currentDrill.expected === newDrill.expected && pool.length > 1) {
+          const others = pool.filter(d => d.expected !== currentDrill.expected);
+          newDrill = others[Math.floor(Math.random() * others.length)];
+        }
+
+        setCurrentDrill(newDrill);
+        initDrill(newDrill);
+      };
+
+      const initDrill = (drillData) => {
+        setSelectedParts([]);
+        setTypedInput('');
+        setFeedback(null);
+        setUserWrongInput('');
+
+        if (drillData.type === 'common_noun' || drillData.type === 'choice' || drillData.type === 'arrange') {
+          const optionsWithIds = drillData.options.map((opt, i) => ({ id: i, text: opt }));
+          setShuffledOptions(optionsWithIds.sort(() => Math.random() - 0.5));
+        } else {
+          setTimeout(() => {
+            if (inputRef.current) inputRef.current.focus();
+          }, 50);
+        }
+      };
+
+      const startGame = () => {
+        setScore(0);
+        setCombo(0);
+        setMaxCombo(0);
+        setTimeLeft(200);
+        setLap(1);
+        setPrevTier('아이언 (Iron)');
+        setStats({ correct: 0, total: 0 });
+        setMistakes([]);
+        
+        setCurrentLevel(1);
+        setLevelProgress(0);
+        pendingLevelRef.current = 1;
+        setGameState('playing');
+        
+        loadNewDrill(1);
+      };
+
+      const startReview = () => {
+        setReviewIdx(0);
+        setGameState('reviewing');
+        const firstDrill = mistakes[0];
+        setCurrentDrill(firstDrill);
+        initDrill(firstDrill);
+      };
+
+      const normalizeText = (text) => text.toLowerCase().replace(/[.,!?]/g, '').replace(/\s+/g, ' ').trim();
+
+      const handleCorrect = () => {
+        if (gameState === 'reviewing') {
+          setFeedback('correct');
+          setTimeout(() => loadNewDrill(0), 500);
+          return;
+        }
+
+        const baseScore = 150;
+        const comboMultiplier = 1 + (combo * 0.2); 
+        const earned = Math.round(baseScore * comboMultiplier);
+        
+        setScore(prev => prev + earned);
+        setCombo(prev => {
+          const newCombo = prev + 1;
+          setMaxCombo(m => Math.max(m, newCombo));
+          return newCombo;
+        });
+        setStats(prev => ({ ...prev, correct: prev.correct + 1, total: prev.total + 1 }));
+
+        // Level progression logic
+        let nextLevel = currentLevel;
+        let nextProgress = levelProgress + 1;
+        let nextLap = lap;
+
+        if (nextProgress >= 3) {
+          nextProgress = 0;
+          if (currentLevel < 10) {
+            nextLevel = currentLevel + 1;
+          } else {
+            nextLap = lap + 1;
+            nextLevel = 6; 
+          }
+        }
+
+        setCurrentLevel(nextLevel);
+        setLevelProgress(nextProgress);
+        setLap(nextLap);
+        pendingLevelRef.current = nextLevel;
+
+        setFeedback('correct');
+        setTimeout(() => {
+          loadNewDrill(nextLevel);
+        }, 500);
+      };
+
+      const handleMistake = (wrongStr) => {
+        if (gameState === 'reviewing') {
+          setUserWrongInput(wrongStr || '응답 없음');
+          setFeedback('wrong');
+          const id = setTimeout(() => {
+            advanceNext();
+          }, 3000);
+          setWrongTimeoutId(id);
+          return;
+        }
+
+        setCombo(0);
+        setStats(prev => ({ ...prev, total: prev.total + 1 }));
+        setMistakes(prev => [...prev, currentDrill]);
+
+        // Level drop logic
+        let nextLvl = currentLevel;
+        let dropped = false;
+        
+        if (currentLevel > 1) {
+          nextLvl = currentLevel - 1;
+          dropped = true;
+        }
+
+        setCurrentLevel(nextLvl);
+        setLevelProgress(0); 
+        pendingLevelRef.current = nextLvl;
+
+        setUserWrongInput(wrongStr || '응답 없음');
+        setFeedback(dropped ? 'wrong_drop' : 'wrong');
+        
+        const id = setTimeout(() => {
+          advanceNext();
+        }, 3000);
+        setWrongTimeoutId(id);
+      };
+
+      const advanceNext = () => {
+        if (wrongTimeoutId) {
+          clearTimeout(wrongTimeoutId);
+          setWrongTimeoutId(null);
+        }
+        loadNewDrill(pendingLevelRef.current);
+      };
+
+      useEffect(() => {
+        if (currentDrill && currentDrill.type === 'arrange' && selectedParts.length === 4 && feedback === null) {
+          const userJoined = selectedParts.map(p => p.text).join(' ');
+          const expectedJoined = currentDrill.expected.join(' ');
+          if (userJoined === expectedJoined) {
+            handleCorrect();
+          } else {
+            handleMistake(userJoined);
+          }
+        }
+      }, [selectedParts]);
+
+      const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && typedInput.trim() && feedback === null) {
+          if (normalizeText(typedInput) === normalizeText(currentDrill.expected)) {
+            handleCorrect();
+          } else {
+            handleMistake(typedInput);
+          }
+        }
+      };
+
+      const selectOption = (opt) => {
+        if (feedback !== null) return;
+        if (currentDrill.type === 'arrange') {
+          setSelectedParts([...selectedParts, opt]);
+          setShuffledOptions(shuffledOptions.filter(o => o.id !== opt.id));
+        } else {
+          if (opt.text === currentDrill.expected) {
+            handleCorrect();
+          } else {
+            handleMistake(opt.text);
+          }
+        }
+      };
+
+      const removePart = (part) => {
+        if (feedback !== null) return;
+        setSelectedParts(selectedParts.filter(p => p.id !== part.id));
+        setShuffledOptions([...shuffledOptions, part]);
+      };
+
+      const renderLocked = () => (
+        <div className="flex flex-col items-center justify-center min-h-screen animate-fade-in space-y-6">
+          <div className="bg-white border border-gray-200 p-8 rounded-2xl shadow-xl flex flex-col items-center text-center max-w-sm w-full">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <LockIcon className="w-8 h-8 text-indigo-600" />
+            </div>
+            <h2 className="text-2xl font-black text-gray-900 mb-2">훈련소 접근 제한</h2>
+            <p className="text-gray-500 text-sm mb-6">관계대명사 훈련소에 입장하려면 부여받은 보안 코드를 입력하세요.</p>
+            
+            <form onSubmit={handleLogin} className="w-full space-y-4">
+              <input 
+                type="password" 
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                placeholder="비밀번호 4자리"
+                maxLength={4}
+                className={`w-full bg-gray-50 border-2 rounded-xl px-4 py-3 text-center text-xl font-black tracking-widest text-gray-900 outline-none transition-all
+                  \${passwordError ? 'border-rose-500 translate-x-1' : 'border-gray-300 focus:border-indigo-500'}
+                `}
+              />
+              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-xl transition-colors">
+                접속 시도
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+
+      const renderWelcome = () => (
+        <div className="bg-white border border-gray-200 p-6 md:p-8 rounded-2xl shadow-xl flex flex-col items-center text-center animate-fade-in space-y-6 max-w-3xl w-full mx-auto my-auto mt-10">
+          <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center border border-indigo-200">
+            <SwordsIcon className="w-8 h-8 text-indigo-600 animate-pulse" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight">관계대명사 랭크 교전</h1>
+            <p className="text-gray-600 text-sm md:text-base max-w-lg mx-auto leading-relaxed">
+              두 문장을 관계대명사로 병합하는 과정을 제한 시간 200초 동안 빠르게 수행하여 최상위 티어에 도전하세요.
+            </p>
+          </div>
+
+          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 w-full text-left space-y-3">
+            <h3 className="text-sm font-bold text-indigo-600 flex items-center gap-1.5">
+              <BookOpenIcon className="w-4 h-4" /> 필수 훈련 과정 요약
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-gray-600">
+              <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                <span className="text-indigo-600 font-extrabold mr-1">단계 1</span>
+                <p className="mt-1">두 문장에서 지칭 대상이 같은 공통 단어 선행사를 찾아냅니다.</p>
+              </div>
+              <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                <span className="text-indigo-600 font-extrabold mr-1">단계 2</span>
+                <p className="mt-1">선행사가 사람이면 who, 사물이면 which를 선택하고 동사의 단수 복수를 일치시킵니다.</p>
+              </div>
+              <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                <span className="text-indigo-600 font-extrabold mr-1">단계 3</span>
+                <p className="mt-1">선행사 바로 뒤에 관계대명사절을 통째로 삽입하여 문장을 하나로 조립합니다.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="w-full text-left space-y-2">
+            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1">
+              <AwardIcon className="w-4 h-4 text-yellow-500" /> LoL 기반 랭크 등급표
+            </h4>
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 text-[10px] md:text-xs">
+              {TIERS_CONFIG.map((tier, idx) => (
+                <div key={idx} className={`p-2 rounded-lg border flex flex-col items-center justify-center text-center transition-all \${tier.color} \${tier.shadow}`}>
+                  <span className="font-extrabold leading-tight text-gray-800">\${tier.name.split(' ')[0]}</span>
+                  <span className="text-[9px] text-gray-500 font-bold mt-1">\${tier.min === 0 ? "Default" : `\${tier.min.toLocaleString()} pts`}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <button onClick={startGame} className="w-full md:w-auto px-12 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg rounded-xl transition-all active:scale-95 shadow-md flex items-center justify-center gap-2">
+            <PlayIcon className="w-5 h-5 fill-current" /> 교전 시작 
+          </button>
+        </div>
+      );
+
+      const renderPlayingOrReviewing = () => {
+        const isReview = gameState === 'reviewing';
+        
+        return (
+          <div className="w-full max-w-3xl flex flex-col gap-4 relative animate-fade-in mx-auto mt-4">
+            
+            {!isReview ? (
+              <>
+                <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden relative">
+                  <div 
+                    className={`h-full transition-all duration-1000 \${timeLeft <= 30 ? 'bg-rose-500 shadow-md shadow-rose-500/50' : 'bg-indigo-500 shadow-md shadow-indigo-500/50'}`} 
+                    style={{ width: `\${(timeLeft / 200) * 100}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between items-end px-1">
+                  <div>
+                    <div className="text-indigo-600 font-black text-sm tracking-widest uppercase mb-0.5 flex items-center gap-3">
+                      <span>Level \${currentLevel} \${lap > 1 ? '(ENDLESS)' : '/ 10'}</span>
+                      <div className="flex gap-1.5" title={`진행도: \${levelProgress}/3`}>
+                        {[0, 1, 2].map(i => (
+                          <div key={i} className={`w-3 h-3 rounded-full transition-colors \${i < levelProgress ? 'bg-indigo-600 shadow-sm' : 'bg-gray-300'}`} />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="text-gray-500 text-xs mt-1">문법 규칙에 맞게 선택하거나 전체 문장을 기입하세요.</div>
+                  </div>
+                  <div className={`flex flex-col items-end \${timeLeft <= 30 ? 'text-rose-500 animate-pulse' : 'text-gray-600'}`}>
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Time Remaining</div>
+                    <div className="flex items-center gap-1 font-mono text-2xl font-black leading-none mt-1">
+                      <ClockIcon className="w-5 h-5" /> \${timeLeft}s
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="flex justify-between items-end px-1">
+                <div>
+                  <div className="text-amber-500 font-black text-sm tracking-widest uppercase mb-0.5">오답 노트 복습 중</div>
+                  <div className="text-gray-500 text-xs">틀렸던 문제를 다시 풀어보며 약점을 보완하세요.</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[9px] font-bold uppercase tracking-wider text-gray-400">진행도</div>
+                  <div className="font-mono text-xl font-black text-gray-800">\${reviewIdx + 1} / \subhtml\n\${mistakes.length}</div>
+                </div>
+              </div>
+            )}
+
+            {!isReview && (
+              <div className="flex items-center justify-between px-4 py-2.5 bg-white border border-gray-200 rounded-xl shadow-sm">
+                <div className="flex items-center gap-1.5">
+                  <AwardIcon className="w-4 h-4 text-yellow-500" />
+                  <span className="text-xs font-bold text-gray-500">현재 랭크</span>
+                </div>
+                <div className={`font-black text-sm px-3 py-0.5 rounded-md border \${getTierMetadata(score).color} \${getTierMetadata(score).shadow}`}>
+                  {getTierMetadata(score).name}
+                </div>
+              </div>
+            )}
+
+            {!isReview && currentLevel < 8 && (
+              <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 text-left text-sm shadow-sm animate-fade-in">
+                <h4 className="font-bold text-indigo-700 mb-2 flex items-center gap-1.5"><BookOpenIcon className="w-4 h-4"/> 관계대명사 변환 3단계 원칙 가이드</h4>
+                <ol className="list-decimal pl-5 text-gray-700 space-y-1 text-xs">
+                  <li>두 문장에서 겹치는 단어 선행사를 찾습니다.</li>
+                  <li>선행사에 맞춰 알맞은 관계대명사를 고르고 동사의 수를 일치시킵니다.</li>
+                  <li>선행사 바로 뒤에 관계대명사절을 통째로 삽입합니다.</li>
+                </ol>
+              </div>
+            )}
+
+            <div className={`bg-white border \${feedback === 'correct' ? 'border-emerald-400 bg-emerald-50' : (feedback === 'wrong' || feedback === 'wrong_drop') ? 'border-rose-400 bg-rose-50' : 'border-gray-200'} p-5 rounded-xl text-center shadow-sm transition-colors duration-200`}>
+              <div className="text-[10px] text-gray-500 font-bold tracking-widest uppercase mb-2">Original Sentences</div>
+              <div className="flex flex-col gap-2">
+                
+                {currentDrill.type === 'arrange' && currentDrill.mainClause ? (
+                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 text-left">
+                    <div className="text-lg md:text-xl font-bold text-gray-800">
+                      <span className="text-sm font-bold text-indigo-500 mr-2">주절:</span> {currentDrill.mainClause}
+                    </div>
+                    <div className="text-lg md:text-xl font-bold text-gray-800 mt-2">
+                      <span className="text-sm font-bold text-indigo-500 mr-2">종속절:</span> {currentDrill.subClause}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {currentDrill.s1 && <div className="text-lg md:text-xl font-bold text-gray-800">{currentDrill.s1}</div>}
+                    {currentDrill.s2 && <div className="text-lg md:text-xl font-bold text-gray-800">{currentDrill.s2}</div>}
+                    {currentDrill.sentence && <div className="text-lg md:text-xl font-bold text-gray-800">{currentDrill.sentence}</div>}
+                    {currentDrill.active && <div className="text-lg md:text-xl font-bold text-gray-800">{currentDrill.active}</div>}
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-white border border-gray-200 p-5 rounded-xl min-h-[180px] flex flex-col justify-center shadow-sm relative overflow-hidden">
+              
+              {(currentDrill.type === 'common_noun' || currentDrill.type === 'choice') && (
+                <div className="space-y-4 text-center">
+                  <div className="text-xs text-gray-500 mb-2">
+                    {currentDrill.type === 'common_noun' ? '두 문장에서 공통되는 명사를 고르세요.' : '빈칸에 들어갈 알맞은 단어를 고르세요.'}
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-3">
+                    {shuffledOptions.map((opt) => (
+                      <button key={opt.id} onClick={() => selectOption(opt)} disabled={feedback !== null}
+                              className="px-6 py-3 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 border border-gray-300 rounded-xl text-gray-800 text-lg font-bold transition-all disabled:opacity-50 shadow-sm">
+                        {opt.text}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {currentDrill.type === 'arrange' && (
+                <div className="space-y-5">
+                  <div className="text-xs text-gray-500 text-center mb-2">블록을 순서대로 클릭하여 관계대명사 문장을 완성하세요.</div>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div key={i} onClick={() => selectedParts[i] && removePart(selectedParts[i])}
+                           className={`h-11 flex items-center justify-center px-4 rounded-lg font-bold text-sm border transition-all cursor-pointer shadow-sm
+                             \${selectedParts[i] ? 'border-indigo-500 bg-indigo-600 text-white' : 'border-gray-300 border-dashed bg-gray-50 text-gray-500 min-w-[80px]'}
+                             \${(feedback === 'wrong' || feedback === 'wrong_drop') && selectedParts[i] ? 'border-rose-500 bg-rose-600' : ''}
+                           `}>
+                        {selectedParts[i] ? selectedParts[i].text : `Step \${i + 1}`}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-2 pt-3 border-t border-gray-100">
+                    {shuffledOptions.map((opt) => (
+                      <button key={opt.id} onClick={() => selectOption(opt)} disabled={feedback !== null}
+                              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg text-gray-700 text-sm font-bold transition-all disabled:opacity-50 shadow-sm">
+                        {opt.text}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {currentDrill.type === 'type_clause' && (
+                <div className="space-y-4 text-center">
+                  <div className="text-xs text-gray-500 mb-2">선행사 뒤에 올 알맞은 관계대명사와 이어질 구문을 입력하세요.</div>
+                  <div className="flex flex-wrap items-center justify-center gap-2 text-base md:text-lg font-medium">
+                    <span className="text-gray-700">{currentDrill.prefix}</span>
+                    <input 
+                      ref={inputRef} type="text" value={typedInput} onChange={e => setTypedInput(e.target.value)} onKeyDown={handleKeyDown} disabled={feedback !== null}
+                      placeholder="입력..."
+                      className={`bg-gray-50 border-b-2 outline-none text-center px-2 py-1 min-w-[200px] font-black transition-colors text-sm md:text-base
+                        \${feedback === null ? 'border-indigo-500 text-indigo-700 focus:border-indigo-600' : feedback === 'correct' ? 'border-emerald-500 text-emerald-600' : 'border-rose-500 text-rose-600'}`}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {currentDrill.type === 'type_full' && (
+                <div className="space-y-4 text-center w-full">
+                  <div className="text-xs text-gray-500 mb-2">마침표 없이 두 문장을 합친 하나의 문장을 완성하여 입력하세요.</div>
+                  <input 
+                    ref={inputRef} type="text" value={typedInput} onChange={e => setTypedInput(e.target.value)} onKeyDown={handleKeyDown} disabled={feedback !== null}
+                    placeholder="전체 문장 입력..."
+                    className={`w-full bg-gray-50 border outline-none rounded-lg px-4 py-3 text-sm md:text-base font-mono font-bold transition-all text-center
+                      \${feedback === null ? 'border-gray-300 text-gray-900 focus:border-indigo-500 shadow-sm' : feedback === 'correct' ? 'border-emerald-400 text-emerald-700 bg-emerald-50' : 'border-rose-400 text-rose-700 bg-rose-50'}`}
+                  />
+                </div>
+              )}
+
+              {(feedback === 'wrong' || feedback === 'wrong_drop') && (
+                <div className="absolute inset-0 bg-white/95 backdrop-blur-md flex flex-col items-center justify-center p-4 text-center animate-fade-in z-20">
+                  <ShieldAlertIcon className="w-10 h-10 text-rose-500 mb-2" />
+                  <h3 className="text-xl font-black text-gray-900 mb-3">
+                    {isReview ? "다시 한번 확인해보세요" : 
+                     feedback === 'wrong_drop' ? `COMBO BROKEN & 레벨 다운 (Lv.\${currentLevel + 1} ➡️ Lv.\${currentLevel})` : 
+                     "COMBO BROKEN (진행도 초기화)"}
+                  </h3>
+                  
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 w-full max-w-md shadow-sm space-y-3">
+                    <div className="flex flex-col items-center">
+                      <span className="text-[10px] text-gray-500 font-bold uppercase mb-1">나의 오답</span>
+                      <div className="text-rose-500 font-mono font-medium text-sm md:text-base line-through decoration-rose-500/50">
+                        {userWrongInput}
+                      </div>
+                    </div>
+                    
+                    <div className="w-full h-px bg-gray-200"></div>
+                    
+                    <div className="flex flex-col items-center">
+                      <span className="text-[10px] text-emerald-600 font-bold uppercase mb-1">올바른 정답</span>
+                      <div className="text-emerald-600 font-mono font-black text-sm md:text-base">
+                        {currentDrill.type === 'arrange' ? currentDrill.expected.join(' ') : 
+                         currentDrill.type === 'type_clause' ? `\${currentDrill.prefix}\${currentDrill.expected}` : 
+                         currentDrill.expected}
+                      </div>
+                    </div>
+
+                    <div className="bg-white p-2 rounded-lg mt-2 border border-gray-100">
+                      <div className="text-xs text-gray-600 leading-snug">{currentDrill.explanation}</div>
+                    </div>
+                  </div>
+                  
+                  <button onClick={advanceNext} className="mt-4 px-6 py-2.5 bg-gray-800 text-white hover:bg-gray-700 font-black rounded-xl transition-all active:scale-95 flex items-center gap-1.5 text-xs shadow-md">
+                    다음으로 넘어가기 <ChevronRightIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {feedback === 'correct' && (
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-10 animate-fade-in">
+                  <CheckCircle2Icon className="w-24 h-24 text-emerald-400 opacity-60" />
+                </div>
+              )}
+            </div>
+
+            {(currentDrill.type === 'type_clause' || currentDrill.type === 'type_full') && feedback === null && (
+              <div className="text-center text-[10px] text-gray-400 font-mono flex justify-center items-center gap-1">
+                입력 후 <span className="px-1.5 py-0.5 bg-gray-100 rounded border border-gray-200 text-gray-500 font-bold">Enter</span> 키를 눌러 제출
+              </div>
+            )}
+          </div>
+        );
+      };
+
+      const renderResult = () => (
+        <div className="bg-white border border-gray-200 p-6 md:p-8 rounded-2xl shadow-xl flex flex-col items-center text-center animate-fade-in space-y-6 max-w-3xl w-full mx-auto my-auto mt-10">
+          <TrophyIcon className="w-16 h-16 text-yellow-500 mb-2 relative z-10 animate-bounce" />
+          <div className="space-y-1 relative z-10">
+            <h1 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight">교전 종료</h1>
+            <p className="text-gray-500 text-sm">200초 동안 치른 관계대명사 스피드 매치 결과</p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 w-full relative z-10">
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col items-center justify-center">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">득점 점수</span>
+              <span className="text-2xl font-black text-indigo-600 font-mono">{score.toLocaleString()}</span>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col items-center justify-center">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">최대 콤보</span>
+              <span className="text-2xl font-black text-orange-500 font-mono">{maxCombo}</span>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col items-center justify-center col-span-2 md:col-span-1">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">최종 정답</span>
+              <span className="text-2xl font-black text-emerald-500 font-mono">{stats.correct} / \${stats.total}</span>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 border border-gray-200 w-full rounded-xl p-5 relative z-10 flex flex-col items-center justify-center space-y-2">
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">FINAL ACHIEVED TIER</span>
+            <div className={`text-3xl md:text-4xl font-black px-8 py-3 rounded-xl border \${getTierMetadata(score).color} \${getTierMetadata(score).shadow}`}>
+              {getTierMetadata(score).name}
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 w-full justify-center mt-2">
+            <button onClick={startGame} className="px-8 py-3 bg-white hover:bg-gray-50 text-gray-800 font-black rounded-xl transition-all flex items-center justify-center gap-2 border border-gray-300 shadow-sm">
+              <RotateCcwIcon className="w-5 h-5" /> 새 게임 시작
+            </button>
+            {mistakes.length > 0 && (
+              <button onClick={startReview} className="px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white font-black rounded-xl transition-all flex items-center justify-center gap-2 shadow-md">
+                <BookOpenIcon className="w-5 h-5" /> 오답 노트 복습 
+              </button>
+            )}
+          </div>
+        </div>
+      );
+
+      const renderReviewDone = () => (
+        <div className="bg-white border border-gray-200 p-8 rounded-2xl shadow-xl flex flex-col items-center text-center animate-fade-in space-y-5 max-w-sm w-full mx-auto my-auto mt-10">
+          <CheckCircle2Icon className="w-16 h-16 text-emerald-500 mb-2" />
+          <h2 className="text-2xl font-black text-gray-900">복습 완료</h2>
+          <p className="text-gray-500 text-sm">오답 노트를 모두 확인했습니다. 이제 실전에서 더 높은 점수를 노려보세요.</p>
+          <button onClick={() => setGameState('result')} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-xl transition-colors mt-4">
+            결과 화면으로 돌아가기
+          </button>
+        </div>
+      );
+
+      const renderHeader = () => (
+        <div className="w-full max-w-3xl flex justify-between items-center mb-4 border-b border-gray-200 pb-3 mx-auto mt-4 px-4 md:px-0">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-indigo-50 rounded-lg border border-indigo-100">
+              <SwordsIcon className="w-5 h-5 text-indigo-600" />
+            </div>
+            <span className="font-black text-lg tracking-widest text-gray-800">REL<span className="text-indigo-600">PRONOUN</span></span>
+          </div>
+          
+          {gameState === 'playing' && (
+            <div className="flex gap-4 items-center">
+              <div className="text-right hidden sm:block">
+                <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Score</div>
+                <div className="font-mono font-black text-xl text-gray-900 leading-none">{score.toLocaleString()}</div>
+              </div>
+              <div className={`flex items-center gap-1.5 px-3 py-1 rounded-md border transition-all \${combo > 2 ? 'bg-orange-50 border-orange-200 text-orange-500 scale-105' : 'bg-gray-50 border-gray-200 text-gray-600'}`}>
+                <FlameIcon className={`w-4 h-4 \${combo > 2 ? 'animate-bounce text-orange-500' : ''}`} />
+                <span className="font-black font-mono">\${combo}x</span>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+
+      return (
+        <div className="min-h-screen bg-gray-100 text-gray-900 font-sans flex flex-col p-4 overflow-x-hidden selection:bg-indigo-200 selection:text-indigo-900">
+          {gameState !== 'locked' && renderHeader()}
+          
+          <main className="flex-1 flex flex-col">
+            {gameState === 'locked' && renderLocked()}
+            {gameState === 'welcome' && renderWelcome()}
+            {(gameState === 'playing' || gameState === 'reviewing') && currentDrill && renderPlayingOrReviewing()}
+            {gameState === 'result' && renderResult()}
+            {gameState === 'review_done' && renderReviewDone()}
+          </main>
+
+          <style dangerouslySetInnerHTML={{__html: `
+            @keyframes fade-in {
+              from { opacity: 0; transform: translateY(10px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
+          `}} />
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
